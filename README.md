@@ -1,4 +1,4 @@
-# Serverless WebRTC Chat
+# Serverless WebRTC Chat with restriction to localhost
 
-* DEMO : https://owebio.github.io/serverless-webrtc-chat/
-* YOUTUBE : https://youtu.be/NEuialr6F5A
+* Demo: https://ctausendfreund.github.io/serverless-webrtc-chat/
+* Original Repo: https://github.com/owebio/serverless-webrtc-chat

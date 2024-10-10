@@ -70,6 +70,7 @@ async function findLocalAddresses() {
   });
 
   const localAddresses = extractDistinctCandidateAddresses(rtc.localDescription.sdp);
+  // TODO: can the mDNS hostnames still be resolved, if we close the connections here?
   // dc.close();
   // rtc.close();
   return localAddresses;

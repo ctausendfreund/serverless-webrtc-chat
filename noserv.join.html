@@ -29,7 +29,7 @@ pc.ondatachannel  = function(e) {dataChannel = e.channel; dcInit(dataChannel)};
 
 pc.onicecandidate = function(e) {
   if (e.candidate) return;
-  $("#joiner-sdp").val(JSON.stringify(replaceCandidateHostnamesWithLocalhost(pc.localDescription)));
+  $("#joiner-sdp").val(JSON.stringify(pc.localDescription));
 };
 
 pc.oniceconnectionstatechange = function(e) {
@@ -44,7 +44,15 @@ function dcInit(dc) {
 }
 
 async function createAnswerSDP() {
-  const offerDesc = new RTCSessionDescription(JSON.parse($("#creater-sdp").val()));
+  const offer = JSON.parse($("#creater-sdp").val());
+
+  const localAddresses = await findLocalAddresses();
+  console.log("local addresses:", localAddresses);
+  console.log("original answer SDP:\n" + offer.sdp);
+  offer.sdp = replaceCandidateAddressesCrossMultiplied(offer.sdp, localAddresses);
+  console.log("modified answer SDP:\n" + offer.sdp);
+
+  const offerDesc = new RTCSessionDescription(offer);
   await pc.setRemoteDescription(offerDesc);
   const answerDesc = await pc.createAnswer();
   await pc.setLocalDescription(answerDesc);

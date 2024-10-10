@@ -33,6 +33,7 @@ pc.oniceconnectionstatechange = function(e) {
 
 pc.onicecandidate = function(e) {
   if (e.candidate) return;
+  console.log("original offer SDP:\n" + pc.localDescription.sdp);
   $("#creater-sdp").val(JSON.stringify(replaceCandidateHostnamesWithLocalhost(pc.localDescription)));
 }
 

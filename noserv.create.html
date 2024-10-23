@@ -1,64 +1,86 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title> CREATE WebRTC channel </title>
-  <link href="noserv.css" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <meta charset="utf-8">
+    <title> CREATE WebRTC channel </title>
+    <link href="noserv.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 </head>
 <body>
 <h2> CREATE WebRTC channel <span id="status"> init </span></h2>
-<h3> 1.CREATE Offer's SDP <button onclick='copyToClipboard("creater-sdp")'>copy</button> <span id="copy-msg"></span></h3>
+<h3> 1.CREATE Offer's SDP
+    <button onclick='copyToClipboard("creater-sdp")'>copy</button>
+    <span id="copy-msg"></span></h3>
 <textarea id="creater-sdp"></textarea>
-<h3> 4.GET Participant's SDP <button onclick="pasteFromClipboard('joiner-sdp')">paste</button> <button id="start">start</button></h3>
+<h3> 4.GET Participant's SDP
+    <button onclick="pasteFromClipboard('joiner-sdp')">paste</button>
+    <button id="start">start</button>
+</h3>
 <textarea id="joiner-sdp" placeholder="HERE COPY AND PASTE [3.Participant'S SDP]"></textarea>
 <h3> CHAT </h3>
 <div id="chat">
-  <div id="chat-screen-wp">
-    <div id="chat-screen"></div>
-  </div>
-  <div id="ct"><input id="msg" disabled><button id="send" disabled>send</button></div>
+    <div id="chat-screen-wp">
+        <div id="chat-screen"></div>
+    </div>
+    <div id="ct"><input id="msg" disabled>
+        <button id="send" disabled>send</button>
+    </div>
 </div>
 <script src="common.js"></script>
 <script>
 
-const pc = new RTCPeerConnection();
-let dataChannel;
+  const pc = new RTCPeerConnection();
+  let dataChannel;
 
-pc.oniceconnectionstatechange = function(e) {
-  const state = pc.iceConnectionState;
-  $('#status').html(state);
-  if (state === "connected") $("#msg, #send").attr("disabled", false);
-};
+  pc.oniceconnectionstatechange = function (e) {
+    const state = pc.iceConnectionState;
+    $('#status').html(state);
+    if (state === "connected") $("#msg, #send").attr("disabled", false);
+  };
 
-pc.onicecandidate = function(e) {
-  if (e.candidate) return;
-  console.log("original offer SDP:\n" + pc.localDescription.sdp);
-  $("#creater-sdp").val(JSON.stringify(replaceCandidateHostnamesWithLocalhost(pc.localDescription)));
-}
-
-function createOfferSDP() {
-  dataChannel = pc.createDataChannel("chat");
-  pc.createOffer().then(function(offer) {
-    pc.setLocalDescription(offer)
-  });
-  dataChannel.onopen = function(){$("textarea").attr("disabled",true);addMSG("CONNECTED!", "info")};
-  dataChannel.onmessage = function(e) {
-    if (e.data) addMSG(e.data, "other");
+  pc.onicecandidate = function (e) {
+    if (e.candidate) return;
+    console.log("original offer SDP:\n" + pc.localDescription.sdp);
+    $("#creater-sdp").val(JSON.stringify(replaceCandidateHostnamesWithLocalhost(pc.localDescription)));
   }
-}
 
-function start() {
-  const answerSDP = $('#joiner-sdp').val()
-  const answerDesc = new RTCSessionDescription(JSON.parse(answerSDP));
-  pc.setRemoteDescription(answerDesc);
-}
+  function createOfferSDP() {
+    dataChannel = pc.createDataChannel("chat");
+    pc.createOffer().then(function (offer) {
+      pc.setLocalDescription(offer)
+    });
+    dataChannel.onopen = function () {
+      $("textarea").attr("disabled", true);
+      addMSG("CONNECTED!", "info")
+    };
 
-createOfferSDP();
+    dataChannel.onmessage = function (e) {
+      if (e.data) {
+        addMSG(e.data, "other");
+      }
+    }
+  }
 
-$("#start").click(function(){start();});
-$("#msg").keypress(function(e) {if(e.which === 13) {sendMSG(dataChannel)}});
-$("#send").click(() => sendMSG(dataChannel));
+  function start() {
+    const answerSDP = $('#joiner-sdp').val()
+    const answerDesc = new RTCSessionDescription(JSON.parse(answerSDP));
+    pc.setRemoteDescription(answerDesc);
+  }
+
+  createOfferSDP();
+
+  $("#start").click(function () {
+    start();
+  });
+  $("#msg").keypress(function (e) {
+    if (e.which === 13) {
+      sendMSG(dataChannel)
+    }
+  });
+  $("#send").click(() => sendMSG(dataChannel));
+
+  // update initial state
+  pc.oniceconnectionstatechange();
 
 </script>
 </body>

@@ -1,68 +1,92 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title> JOIN WebRTC channel </title>
-  <link href="noserv.css" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <meta charset="utf-8">
+    <title> JOIN WebRTC channel </title>
+    <link href="noserv.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 </head>
 <body>
-<h2>  JOIN WebRTC channel  <span id="status"> init </span> </h2>
-<h3> 2.GET Offer's SDP <button onclick="pasteFromClipboard('creater-sdp')">paste</button></h3>
+<h2> JOIN WebRTC channel <span id="status"> init </span></h2>
+<h3> 2.GET Offer's SDP
+    <button onclick="pasteFromClipboard('creater-sdp')">paste</button>
+</h3>
 <textarea id="creater-sdp" placeholder="HERE COPY & PASTE [1.CREATE Offer's SDP]"></textarea>
-<h3> 3.CREATE Participant'S SDP <button id="create">create</button>
-  <button onclick='copyToClipboard("joiner-sdp")'>copy</button> <span id="copy-msg"></span>
+<h3> 3.CREATE Participant'S SDP
+    <button id="create">create</button>
+    <button onclick='copyToClipboard("joiner-sdp")'>copy</button>
+    <span id="copy-msg"></span>
 </h3>
 <textarea id="joiner-sdp"></textarea>
 <h3> CHAT </h3>
 <div id="chat">
-  <div id="chat-screen-wp">
-    <div id="chat-screen"></div>
-  </div>
-  <div id="ct"><input id="msg" disabled><button id="send" disabled>send</button></div>
+    <div id="chat-screen-wp">
+        <div id="chat-screen"></div>
+    </div>
+    <div id="ct"><input id="msg" disabled>
+        <button id="send" disabled>send</button>
+    </div>
 </div>
 <script src="common.js"></script>
 <script>
 
-const pc = new RTCPeerConnection();
-let dataChannel;
+  const pc = new RTCPeerConnection();
+  let dataChannel;
 
-pc.ondatachannel  = function(e) {dataChannel = e.channel; dcInit(dataChannel)};
+  pc.ondatachannel = function (e) {
+    console.log("ondatachannel");
+    dataChannel = e.channel;
 
-pc.onicecandidate = function(e) {
-  if (e.candidate) return;
-  $("#joiner-sdp").val(JSON.stringify(pc.localDescription));
-};
+    dataChannel.onopen = function () {
+      $("textarea").attr("disabled", true);
+      addMSG("CONNECTED!", "info")
+    };
 
-pc.oniceconnectionstatechange = function(e) {
-  const state = pc.iceConnectionState
-  $('#status').html(state);
-  if (state == "connected") $("#msg, #send").attr("disabled", false);
-};
+    dataChannel.onmessage = function (e) {
+      if (e.data) {
+        addMSG(e.data, "other");
+      }
+    }
+  };
 
-function dcInit(dc) {
-  dc.onopen    = function()  {$("textarea").attr("disabled",true);addMSG("CONNECTED!", "info")};
-  dc.onmessage = function(e) {if (e.data) addMSG(e.data, "other");}
-}
+  pc.onicecandidate = function (e) {
+    if (e.candidate) return;
+    console.log("OnICE candidate:", e);
+    $("#joiner-sdp").val(JSON.stringify(pc.localDescription));
+  };
 
-async function createAnswerSDP() {
-  const offer = JSON.parse($("#creater-sdp").val());
+  pc.oniceconnectionstatechange = function (e) {
+    const state = pc.iceConnectionState;
+    console.log("joiner ice state:", state);
+    $('#status').html(state);
+    if (state === "connected") $("#msg, #send").attr("disabled", false);
+  };
 
-  const localAddresses = await findLocalAddresses();
-  console.log("local addresses:", localAddresses);
-  console.log("original answer SDP:\n" + offer.sdp);
-  offer.sdp = replaceCandidateAddressesCrossMultiplied(offer.sdp, localAddresses);
-  console.log("modified answer SDP:\n" + offer.sdp);
+  async function createAnswerSDP() {
+    const offer = JSON.parse($("#creater-sdp").val());
 
-  const offerDesc = new RTCSessionDescription(offer);
-  await pc.setRemoteDescription(offerDesc);
-  const answerDesc = await pc.createAnswer();
-  await pc.setLocalDescription(answerDesc);
-}
+    const localAddresses = await findLocalAddresses();
+    console.log("local addresses:", localAddresses);
+    console.log("original offer SDP:\n" + offer.sdp);
+    offer.sdp = replaceCandidateAddressesCrossMultiplied(offer.sdp, localAddresses);
+    console.log("modified offer SDP:\n" + offer.sdp);
 
-$("#create").click(createAnswerSDP);
-$("#msg").keypress(function(e) {if(e.which === 13) {sendMSG(dataChannel)}});
-$("#send").click(() => sendMSG(dataChannel));
+    const offerDesc = new RTCSessionDescription(offer);
+    await pc.setRemoteDescription(offerDesc);
+    const answerDesc = await pc.createAnswer();
+    await pc.setLocalDescription(answerDesc);
+  }
+
+  $("#create").click(createAnswerSDP);
+  $("#msg").keypress(function (e) {
+    if (e.which === 13) {
+      sendMSG(dataChannel)
+    }
+  });
+  $("#send").click(() => sendMSG(dataChannel));
+
+  // update initial state
+  pc.oniceconnectionstatechange();
 
 </script>
 </body>

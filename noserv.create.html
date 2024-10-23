@@ -8,9 +8,9 @@
 </head>
 <body>
 <h2> CREATE WebRTC channel <span id="status"> init </span></h2>
-<h3> 1.CREATE Offer's SDP </h3>
+<h3> 1.CREATE Offer's SDP <button onclick='copyToClipboard("creater-sdp")'>copy</button> <span id="copy-msg"></span></h3>
 <textarea id="creater-sdp"></textarea>
-<h3> 4.GET Participant's SDP <button id="start">start</button></h3>
+<h3> 4.GET Participant's SDP <button onclick="pasteFromClipboard('joiner-sdp')">paste</button> <button id="start">start</button></h3>
 <textarea id="joiner-sdp" placeholder="HERE COPY AND PASTE [3.Participant'S SDP]"></textarea>
 <h3> CHAT </h3>
 <div id="chat">

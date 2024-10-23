@@ -90,3 +90,18 @@ async function findLocalAddresses() {
     return hosts;
   }
 }
+
+async function copyToClipboard(elementId) {
+  const textToCopy = document.getElementById(elementId).value;
+  try {
+    await navigator.clipboard.writeText(textToCopy);
+    $("#copy-msg").html("copied!");
+  } catch (err) {
+    $("#copy-msg").html("error!");
+  }
+}
+
+async function pasteFromClipboard(elementId) {
+  const pastedText = await navigator.clipboard.readText();
+  document.getElementById(elementId).value = pastedText;
+}

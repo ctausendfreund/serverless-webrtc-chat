@@ -62,9 +62,8 @@
   }
 
   function start() {
-    const answerSDP = $('#joiner-sdp').val()
-    const answerDesc = new RTCSessionDescription(JSON.parse(answerSDP));
-    pc.setRemoteDescription(answerDesc);
+    const answer = JSON.parse($('#joiner-sdp').val());
+    pc.setRemoteDescription(answer);
   }
 
   createOfferSDP();

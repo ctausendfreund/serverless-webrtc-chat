@@ -71,8 +71,7 @@
     offer.sdp = replaceCandidateAddressesCrossMultiplied(offer.sdp, localAddresses);
     console.log("modified offer SDP:\n" + offer.sdp);
 
-    const offerDesc = new RTCSessionDescription(offer);
-    await pc.setRemoteDescription(offerDesc);
+    await pc.setRemoteDescription(offer);
     const answerDesc = await pc.createAnswer();
     await pc.setLocalDescription(answerDesc);
   }

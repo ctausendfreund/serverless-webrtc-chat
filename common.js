@@ -28,7 +28,7 @@ function replaceCandidateHostnamesWithLocalhost(sdpObject) {
     return line;
   }).join('\n');
 
-  return new RTCSessionDescription({type: sdpObject.type, sdp: modifiedSdp});
+  return {type: sdpObject.type, sdp: modifiedSdp};
 }
 
 function replaceCandidateAddressesCrossMultiplied(sdp, newAddresses) {

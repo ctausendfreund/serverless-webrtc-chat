@@ -9,6 +9,7 @@
 <body>
 <h2> CREATE WebRTC channel <span id="status"> init </span></h2>
 <h3> 1.CREATE Offer's SDP
+    <button onclick="closeRtcConnection();">close</button>
     <button onclick='copyToClipboard("creater-sdp")'>copy</button>
     <span id="copy-msg"></span></h3>
 <textarea id="creater-sdp"></textarea>
@@ -42,6 +43,15 @@
     if (e.candidate) return;
     console.log("creators original offer SDP:\n" + pc.localDescription.sdp);
     $("#creater-sdp").val(JSON.stringify(replaceCandidateHostnamesWithLocalhost(pc.localDescription)));
+  }
+
+  function closeRtcConnection() {
+    if (pc) {
+      pc.close();
+      pc.oniceconnectionstatechange(); // update state display
+    } else {
+      console.error('rtc connection not initialized. No close possible');
+    }
   }
 
   function createOfferSDP() {
@@ -78,7 +88,7 @@
   });
   $("#send").click(() => sendMSG(dataChannel));
 
-  // update initial state
+  // update initial state display
   pc.oniceconnectionstatechange();
 
 </script>
